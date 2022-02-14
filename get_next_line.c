@@ -157,6 +157,7 @@ char    *get_next_line(int fd)
 		reached_end_of_fd = grow_buffer(&(buff_remaining[fd]), fd);
 		if (reached_end_of_fd == -1)
 		{
+			free(buff_remaining[fd]);
 			return (NULL);
 		}
 		end_position = find_end_char(buff_remaining[fd], &new_line_found);
@@ -165,6 +166,19 @@ char    *get_next_line(int fd)
 	}
 	// printf("The current state of the buffer is:\n----------\n%s\n----------\n", buff_remaining[fd]);
 	char	*next_line = extract_next_line(&(buff_remaining[fd]), end_position);
+
+	if (reached_end_of_fd && next_line[0] == '\0')
+	{
+		free(next_line);
+		if (buff_remaining[fd])
+		{
+			// printf("freeing buff on exit\n");
+			free(buff_remaining[fd]);
+			buff_remaining[fd] = NULL;
+		}
+		return (NULL);
+	}
+
 	return (next_line);
 
     // grow_buffer(pointer, fd)

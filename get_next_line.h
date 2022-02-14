@@ -2,7 +2,7 @@
 # define GET_NEXT_LINE_H
 
 # define FD_MAX (1024 + 1)
-# define BUFF_SIZE (BUFFER_SIZE > 10 || BUFFER_SIZE < 1 ? 10 : BUFFER_SIZE)
+# define BUFF_SIZE (BUFFER_SIZE > 1000 || BUFFER_SIZE < 1 ? 1000 : BUFFER_SIZE)
 
 #include <stdlib.h>
 #include <unistd.h>
