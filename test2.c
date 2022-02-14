@@ -24,6 +24,7 @@ int main(void)
 	{
 		char *nl = get_next_line(fd);
 		printf("testing: line number %2d: <%s>\n", i, nl);
+		free(nl);
 		i++;
 	}
 }
