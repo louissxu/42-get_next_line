@@ -121,6 +121,7 @@ void	remove_buff(t_buff **list_of_buffers_head, int fd)
 			free(buff->next->str);
 			free(buff->next);
 			buff->next = tmp;
+			return ;
 		}
 		buff = buff->next;
 	}
