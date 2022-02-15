@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line_utils.c                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lxu <marvin@42.fr>                         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/02/15 16:09:19 by lxu               #+#    #+#             */
+/*   Updated: 2022/02/15 16:09:23 by lxu              ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "get_next_line.h"
 
 /**
@@ -14,7 +26,7 @@
  */
 t_buff	*new_buff(void)
 {
-	t_buff *buff;
+	t_buff	*buff;
 
 	buff = malloc(sizeof (*buff) * 1);
 	if (!buff)
@@ -52,35 +64,25 @@ t_buff	*new_buff(void)
  */
 t_buff	*get_buff(t_buff **list_of_buffers, int fd)
 {
-	t_buff *buff;
-	t_buff *next_buff;
+	t_buff	*buff;
+	t_buff	*next_buff;
 
 	if (*list_of_buffers)
 	{
 		buff = *list_of_buffers;
 		while (buff->fd != fd && buff->next)
-		{
 			buff = buff->next;
-		}
 		if (buff->fd == fd)
-		{
 			return (buff);
-		}
 	}
 	next_buff = new_buff();
 	if (!next_buff)
-	{
 		return (NULL);
-	}
 	next_buff->fd = fd;
 	if (!(*list_of_buffers))
-	{
 		*list_of_buffers = next_buff;
-	}
 	else
-	{
 		buff->next = next_buff;
-	}
 	return (next_buff);
 }
 
@@ -112,13 +114,11 @@ void	destroy_buff(t_buff *buff)
  */
 void	remove_buff(t_buff **list_of_buffers_head, int fd)
 {
-	t_buff *buff;
-	t_buff *tmp;
+	t_buff	*buff;
+	t_buff	*tmp;
 
 	if (!*list_of_buffers_head)
-	{
 		return ;
-	}
 	buff = *list_of_buffers_head;
 	if (buff->fd == fd)
 	{
@@ -154,33 +154,40 @@ void	remove_buff(t_buff **list_of_buffers_head, int fd)
  */
 char	*ft_strslice(char *str, size_t left, size_t right)
 {
-	size_t str_len;
+	size_t	str_len;
+	size_t	result_str_len;
+	char	*result_str;
+	size_t	i;
 
 	str_len = 0;
 	while (str[str_len])
-	{
 		str_len++;
-	}
 	if (right > str_len)
-	{
 		right = str_len;
-	}
 	if (left > right)
-	{
 		left = right;
-	}
-	size_t str_size = (right - left + 1);
-	char	*result = malloc(sizeof (*result) * (str_size));
-	if (!result)
-	{
+	result_str_len = (right - left);
+	result_str = malloc(sizeof (*result_str) * (result_str_len + 1));
+	if (!result_str)
 		return (NULL);
-	}
-	size_t i = 0;
+	i = 0;
 	while (left + i < right)
 	{
-		result[i] = str[left + i];
+		result_str[i] = str[left + i];
 		i++;
 	}
-	result[i] = '\0';
-	return (result);
+	result_str[i] = '\0';
+	return (result_str);
+}
+
+size_t	ft_strlen(char *str)
+{
+	size_t	i;
+
+	i = 0;
+	while (str[i])
+	{
+		i++;
+	}
+	return (i);
 }

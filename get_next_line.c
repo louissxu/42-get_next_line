@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lxu <marvin@42.fr>                         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/02/15 16:09:07 by lxu               #+#    #+#             */
+/*   Updated: 2022/02/15 16:09:12 by lxu              ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "get_next_line.h"
 
 /**
@@ -16,7 +28,9 @@
  */
 static size_t	find_end_char(t_buff *buff, int *new_line_found)
 {
-	size_t i = 0;
+	size_t	i;
+
+	i = 0;
 	*new_line_found = 0;
 	while (buff->str[i])
 	{
@@ -42,36 +56,28 @@ static size_t	find_end_char(t_buff *buff, int *new_line_found)
  */
 static int	grow_buffer(t_buff *buff)
 {
-	char new_buff[BUFF_SIZE + 1];
+	char	new_buff[BUFFER_SIZE + 1];
+	ssize_t	chars_read;
+	char	*tmp;
+	size_t	i;
+	size_t	j;
 
-	ssize_t chars_read = read(buff->fd, new_buff, BUFF_SIZE);
+	chars_read = read(buff->fd, new_buff, BUFFER_SIZE);
 	if (chars_read == -1)
-	{
 		return (-1);
-	}
 	if (chars_read == 0)
-	{
 		return (1);
-	}
 	new_buff[chars_read] = '\0';
-	size_t	str_len = 0;
-	while (buff->str[str_len])
-	{
-		str_len++;
-	}
-	str_len += chars_read;
-	char *tmp = malloc(sizeof (*tmp) * (str_len + 1));
+	tmp = malloc(sizeof (*tmp) * (ft_strlen(buff->str) + chars_read + 1));
 	if (!tmp)
-	{
 		return (1);
-	}
-	size_t i = 0;
+	i = 0;
 	while (buff->str[i])
 	{
 		tmp[i] = buff->str[i];
 		i++;
 	}
-	size_t j = 0;
+	j = 0;
 	while (new_buff[j])
 	{
 		tmp[i + j] = new_buff[j];
@@ -96,6 +102,8 @@ static int	grow_buffer(t_buff *buff)
 static char	*extract_next_line(t_buff *buff, size_t line_end_position)
 {
 	char	*next_line;
+	size_t	i;
+	char	*remaining_str;
 
 	if (buff->str[line_end_position] == '\n')
 	{
@@ -106,14 +114,14 @@ static char	*extract_next_line(t_buff *buff, size_t line_end_position)
 	{
 		return (NULL);
 	}
-	size_t i = 0;
+	i = 0;
 	while (i < line_end_position)
 	{
 		next_line[i] = buff->str[i];
 		i++;
 	}
 	next_line[i] = '\0';
-	char	*remaining_str = ft_strslice(buff->str, line_end_position, SIZE_MAX);
+	remaining_str = ft_strslice(buff->str, line_end_position, SIZE_MAX);
 	if (!remaining_str)
 	{
 		free(next_line);
@@ -141,16 +149,19 @@ static char	*extract_next_line(t_buff *buff, size_t line_end_position)
  * @param fd The file descriptor to read from.
  * @return char* The heap string representation of the next line.
  */
-char    *get_next_line(int fd)
+char	*get_next_line(int fd)
 {
-	static t_buff *list_of_buffers;
-	t_buff	*this_buff;
+	static t_buff	*list_of_buffers;
+	t_buff			*this_buff;
+	int				new_line_found;
+	ssize_t			line_len;
+	int				reached_end_of_fd;
+	char			*next_line;
 
 	this_buff = get_buff(&list_of_buffers, fd);
 
-	int		new_line_found;
-	ssize_t	line_len = find_end_char(this_buff, &new_line_found);
-	int		reached_end_of_fd = 0;
+	line_len = find_end_char(this_buff, &new_line_found);
+	reached_end_of_fd = 0;
 	while (!new_line_found && reached_end_of_fd == 0)
 	{
 		reached_end_of_fd = grow_buffer(this_buff);
@@ -161,7 +172,7 @@ char    *get_next_line(int fd)
 		}
 		line_len = find_end_char(this_buff, &new_line_found);
 	}
-	char	*next_line = extract_next_line(this_buff, line_len);
+	next_line = extract_next_line(this_buff, line_len);
 	if (reached_end_of_fd && next_line[0] == '\0')
 	{
 		free(next_line);
