@@ -87,20 +87,6 @@ t_buff	*get_buff(t_buff **list_of_buffers, int fd)
 }
 
 /**
- * @brief Destroys a buff object
- * 
- * Destroys a buff object by freeing correctly.
- * 
- * @param buff The buff object to be free'd
- */
-void	destroy_buff(t_buff *buff)
-{
-	free(buff->str);
-	free(buff);
-	return ;
-}
-
-/**
  * @brief Removes a buff object with corresponding key
  * 
  * Given the head of a buff object linked list. Removes the buff object and
@@ -123,7 +109,8 @@ void	remove_buff(t_buff **list_of_buffers_head, int fd)
 	if (buff->fd == fd)
 	{
 		*list_of_buffers_head = buff->next;
-		destroy_buff(buff);
+		free(buff->str);
+		free(buff);
 		return ;
 	}
 	while (buff->next)
@@ -131,55 +118,20 @@ void	remove_buff(t_buff **list_of_buffers_head, int fd)
 		if (buff->next->fd == fd)
 		{
 			tmp = buff->next->next;
-			destroy_buff(buff->next);
+			free(buff->next->str);
+			free(buff->next);
 			buff->next = tmp;
-			return ;
 		}
 		buff = buff->next;
 	}
-	return ;
 }
 
 /**
- * @brief String slicing.
+ * @brief Calculates length of a string.
  * 
- * An implementation of string slicing. As close as I can get since C doesn't
- * allow for default/empty args. And couldn't use 0 as the "blank" flag as 0 is
- * a valid slice position.
- * 
- * @param str String to slice.
- * @param left Left position to slice from (inclusive).
- * @param right Right position to slice to (exclusive).
- * @return char* Heap string of sliced result.
+ * @param str String to measure.
+ * @return size_t Number of chars in string. Not including the null terminator.
  */
-char	*ft_strslice(char *str, size_t left, size_t right)
-{
-	size_t	str_len;
-	size_t	result_str_len;
-	char	*result_str;
-	size_t	i;
-
-	str_len = 0;
-	while (str[str_len])
-		str_len++;
-	if (right > str_len)
-		right = str_len;
-	if (left > right)
-		left = right;
-	result_str_len = (right - left);
-	result_str = malloc(sizeof (*result_str) * (result_str_len + 1));
-	if (!result_str)
-		return (NULL);
-	i = 0;
-	while (left + i < right)
-	{
-		result_str[i] = str[left + i];
-		i++;
-	}
-	result_str[i] = '\0';
-	return (result_str);
-}
-
 size_t	ft_strlen(char *str)
 {
 	size_t	i;
@@ -190,4 +142,36 @@ size_t	ft_strlen(char *str)
 		i++;
 	}
 	return (i);
+}
+
+/**
+ * @brief Takes two strings and returns new heap string of the two joined.
+ * 
+ * @param s1 The first string to join.
+ * @param s2 The second string to append.
+ * @return char* A new heap string with the two strings joined.
+ */
+char	*ft_strjoin(char *s1, char *s2)
+{
+	size_t	i;
+	size_t	j;
+	char	*result;
+
+	result = malloc(sizeof (*result) * (ft_strlen(s1) + ft_strlen(s2) + 1));
+	if (!result)
+		return (NULL);
+	i = 0;
+	while (s1[i])
+	{
+		result[i] = s1[i];
+		i++;
+	}
+	j = 0;
+	while (s2[j])
+	{
+		result[i + j] = s2[j];
+		j++;
+	}
+	result[i + j] = '\0';
+	return (result);
 }

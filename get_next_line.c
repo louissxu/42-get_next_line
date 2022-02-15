@@ -13,6 +13,46 @@
 #include "get_next_line.h"
 
 /**
+ * @brief String slicing.
+ * 
+ * An implementation of string slicing. As close as I can get since C doesn't
+ * allow for default/empty args. And couldn't use 0 as the "blank" flag as 0 is
+ * a valid slice position.
+ * 
+ * @param str String to slice.
+ * @param left Left position to slice from (inclusive).
+ * @param right Right position to slice to (exclusive).
+ * @return char* Heap string of sliced result.
+ */
+char	*ft_strslice(char *str, size_t left, size_t right)
+{
+	size_t	str_len;
+	size_t	result_str_len;
+	char	*result_str;
+	size_t	i;
+
+	str_len = 0;
+	while (str[str_len])
+		str_len++;
+	if (right > str_len)
+		right = str_len;
+	if (left > right)
+		left = right;
+	result_str_len = (right - left);
+	result_str = malloc(sizeof (*result_str) * (result_str_len + 1));
+	if (!result_str)
+		return (NULL);
+	i = 0;
+	while (left + i < right)
+	{
+		result_str[i] = str[left + i];
+		i++;
+	}
+	result_str[i] = '\0';
+	return (result_str);
+}
+
+/**
  * @brief Finds end char of a string. Either a \n or \0 char.
  * 
  * Searches a string for first instance of the end of a line (which will either
@@ -59,8 +99,6 @@ static int	grow_buffer(t_buff *buff)
 	char	new_buff[BUFFER_SIZE + 1];
 	ssize_t	chars_read;
 	char	*tmp;
-	size_t	i;
-	size_t	j;
 
 	chars_read = read(buff->fd, new_buff, BUFFER_SIZE);
 	if (chars_read == -1)
@@ -68,22 +106,9 @@ static int	grow_buffer(t_buff *buff)
 	if (chars_read == 0)
 		return (1);
 	new_buff[chars_read] = '\0';
-	tmp = malloc(sizeof (*tmp) * (ft_strlen(buff->str) + chars_read + 1));
+	tmp = ft_strjoin(buff->str, new_buff);
 	if (!tmp)
 		return (1);
-	i = 0;
-	while (buff->str[i])
-	{
-		tmp[i] = buff->str[i];
-		i++;
-	}
-	j = 0;
-	while (new_buff[j])
-	{
-		tmp[i + j] = new_buff[j];
-		j++;
-	}
-	tmp[i + j] = '\0';
 	free(buff->str);
 	buff->str = tmp;
 	return (0);
@@ -106,14 +131,10 @@ static char	*extract_next_line(t_buff *buff, size_t line_end_position)
 	char	*remaining_str;
 
 	if (buff->str[line_end_position] == '\n')
-	{
 		line_end_position++;
-	}
 	next_line = malloc(sizeof (*next_line) * (line_end_position + 1));
 	if (!next_line)
-	{
 		return (NULL);
-	}
 	i = 0;
 	while (i < line_end_position)
 	{
@@ -156,10 +177,8 @@ char	*get_next_line(int fd)
 	int				new_line_found;
 	ssize_t			line_len;
 	int				reached_end_of_fd;
-	char			*next_line;
 
 	this_buff = get_buff(&list_of_buffers, fd);
-
 	line_len = find_end_char(this_buff, &new_line_found);
 	reached_end_of_fd = 0;
 	while (!new_line_found && reached_end_of_fd == 0)
@@ -172,12 +191,10 @@ char	*get_next_line(int fd)
 		}
 		line_len = find_end_char(this_buff, &new_line_found);
 	}
-	next_line = extract_next_line(this_buff, line_len);
-	if (reached_end_of_fd && next_line[0] == '\0')
+	if (reached_end_of_fd && this_buff->str[0] == '\0')
 	{
-		free(next_line);
 		remove_buff(&list_of_buffers, fd);
 		return (NULL);
 	}
-	return (next_line);
+	return (extract_next_line(this_buff, line_len));
 }
